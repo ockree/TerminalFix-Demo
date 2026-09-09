@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Just a moment...</title>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #ffffff;
+      --text: #202124;
+      --muted: #62666b;
+      --border: #c9cdd2;
+      --soft-border: #e4e6e8;
+      --panel-background: #ffffff;
+      --panel-header: #fafafa;
+      --orange: #f48120;
+      --green: #2f9e55;
+      --blue: #087bc1;
+      --keyboard: #f7f8f9;
+      --keyboard-border: #c9ced3;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .simulation-banner {
+      position: fixed;
+      z-index: 10;
+      top: 0;
+      right: 0;
+      left: 0;
+      padding: 6px 12px;
+      border-bottom: 1px solid #d89c28;
+      background: #fff4d4;
+      color: #644800;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-align: center;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      width: 100%;
+      max-width: 650px;
+      margin: clamp(105px, 19vh, 190px) auto 0;
+      padding: 0 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 49px;
+      height: 25px;
+      flex: 0 0 auto;
+    }
+
+    .cloud-large,
+    .cloud-small,
+    .cloud-base {
+      position: absolute;
+      display: block;
+      background: var(--orange);
+    }
+
+    .cloud-large {
+      right: 5px;
+      bottom: 5px;
+      width: 23px;
+      height: 17px;
+      border-radius: 50%;
+    }
+
+    .cloud-small {
+      right: 25px;
+      bottom: 5px;
+      width: 17px;
+      height: 13px;
+      border-radius: 50%;
+    }
+
+    .cloud-base {
+      right: 1px;
+      bottom: 3px;
+      width: 42px;
+      height: 10px;
+      border-radius: 8px;
+    }
+
+    .brand-name {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.4px;
+    }
+
+    .instruction-heading {
+      margin: 0 0 18px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .verification-panel {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: var(--panel-background);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.09);
+    }
+
+    .panel-status {
+      min-height: 65px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 11px 13px;
+      border-bottom: 1px solid var(--soft-border);
+      background: var(--panel-header);
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      border: 3px dotted var(--green);
+      border-radius: 50%;
+      animation: spin 3.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .status-text {
+      font-size: 14px;
+      color: #42464a;
+    }
+
+    .mini-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      color: #303337;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      line-height: 1.1;
+      text-transform: uppercase;
+    }
+
+    .mini-cloud {
+      position: relative;
+      width: 34px;
+      height: 16px;
+      margin-bottom: 2px;
+    }
+
+    .mini-cloud::before,
+    .mini-cloud::after {
+      position: absolute;
+      content: "";
+      background: var(--orange);
+    }
+
+    .mini-cloud::before {
+      right: 0;
+      bottom: 1px;
+      width: 31px;
+      height: 8px;
+      border-radius: 8px;
+    }
+
+    .mini-cloud::after {
+      right: 5px;
+      bottom: 3px;
+      width: 17px;
+      height: 13px;
+      border-radius: 50%;
+    }
+
+    .panel-content {
+      padding: 15px 14px 12px;
+    }
+
+    .panel-intro {
+      margin: 0 0 13px;
+      color: #62666b;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .steps {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: verification-step;
+    }
+
+    .step {
+      position: relative;
+      min-height: 31px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-left: 31px;
+      color: #51555a;
+      font-size: 12px;
+      line-height: 1.45;
+      counter-increment: verification-step;
+    }
+
+    .step::before {
+      position: absolute;
+      left: 0;
+      width: 18px;
+      height: 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #606469;
+      color: white;
+      content: counter(verification-step);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .step:first-child::before {
+      background: var(--orange);
+    }
+
+    .keys {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    kbd {
+      min-width: 29px;
+      display: inline-grid;
+      place-items: center;
+      padding: 4px 7px;
+      border: 1px solid var(--keyboard-border);
+      border-bottom-width: 2px;
+      border-radius: 3px;
+      background: var(--keyboard);
+      color: #3d4247;
+      font: 11px "Segoe UI", Arial, sans-serif;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    }
+
+    kbd.windows-key {
+      min-width: 46px;
+      border-color: #1590cf;
+      background: #168ac6;
+      color: white;
+      font-weight: 600;
+    }
+
+    kbd.ctrl-key {
+      min-width: 43px;
+      border-color: #75bad8;
+      background: #eaf7fc;
+      color: #0874ab;
+    }
+
+    kbd.enter-key {
+      min-width: 52px;
+      border-color: #7fc997;
+      background: #effbf2;
+      color: #22763e;
+    }
+
+    .copy-row {
+      margin: 10px 0 10px 31px;
+    }
+
+    #copyButton {
+      min-width: 188px;
+      padding: 7px 12px;
+      border: 1px solid #bfc3c7;
+      border-radius: 3px;
+      background: linear-gradient(#ffffff, #f0f1f2);
+      color: #3f4347;
+      font: 600 11px Arial, Helvetica, sans-serif;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+
+    #copyButton:hover {
+      border-color: #9fa4a9;
+      background: linear-gradient(#ffffff, #e8eaec);
+    }
+
+    #copyButton:active {
+      transform: translateY(1px);
+    }
+
+    #copyButton.copied {
+      border-color: #72b889;
+      background: #edf9f1;
+      color: #23723e;
+    }
+
+    .verification-code {
+      display: inline-block;
+      padding: 7px 9px;
+      border: 1px solid #d7dade;
+      border-radius: 2px;
+      background: white;
+      color: #4e5358;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 10px;
+    }
+
+    .refresh-message {
+      margin-top: 8px;
+      padding: 10px 0 0 31px;
+      border-top: 1px solid #eceeef;
+      color: #666a6e;
+      font-size: 11px;
+    }
+
+    .refresh-message::before {
+      display: inline-grid;
+      width: 17px;
+      height: 17px;
+      margin-right: 9px;
+      place-items: center;
+      border-radius: 50%;
+      background: #666a6e;
+      color: white;
+      content: "â»";
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    #copyStatus {
+      min-height: 17px;
+      margin: 9px 0 0 31px;
+      color: #23723e;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .connection-message {
+      margin: 7px 0 0;
+      color: #55595e;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    details {
+      margin-top: 18px;
+      color: #777b80;
+      font-size: 11px;
+    }
+
+    summary {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .command-preview {
+      max-height: 120px;
+      overflow: auto;
+      margin-top: 9px;
+      padding: 10px;
+      border: 1px solid #d9dcdf;
+      background: #fafafa;
+      color: #4a4e52;
+      font: 10px/1.5 Consolas, "Courier New", monospace;
+      overflow-wrap: anywhere;
+    }
+
+    .page-footer {
+      width: 100%;
+      max-width: 650px;
+      margin: auto auto 25px;
+      padding: 0 24px;
+      color: #8a8e92;
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .footer-rule {
+      margin-bottom: 15px;
+      border: 0;
+      border-top: 1px solid #dedfe1;
+    }
+
+    .footer-links {
+      margin-top: 4px;
+    }
+
+    .footer-links a {
+      margin: 0 4px;
+      color: #1976a9;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 560px) {
+      main {
+        margin-top: 85px;
+        padding: 0 16px;
+      }
+
+      .brand-name {
+        font-size: 21px;
+      }
+
+      .step {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        padding-top: 3px;
+        padding-bottom: 5px;
+      }
+
+      .step::before {
+        top: 3px;
+      }
+
+      .panel-status {
+        padding: 10px;
+      }
+
+      .copy-row {
+        margin-left: 31px;
+      }
+
+      #copyButton {
+        width: calc(100% - 1px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .spinner {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="simulation-banner">
+    AUTHORIZED SECURITY-AWARENESS SIMULATION
+  </div>
+
+  <div class="page">
+    <main>
+      <div class="brand" aria-label="Cloudflare.com">
+        <span class="brand-mark" aria-hidden="true">
+          <span class="cloud-small"></span>
+          <span class="cloud-large"></span>
+          <span class="cloud-base"></span>
+        </span>
+
+        <span class="brand-name">Cloudflare.com</span>
+      </div>
+
+      <p class="instruction-heading">
+        Verify you are human by completing the action below.
+      </p>
+
+      <section class="verification-panel" aria-labelledby="verificationStatus">
+        <div class="panel-status">
+          <div class="status-left">
+            <div class="spinner" aria-hidden="true"></div>
+            <span class="status-text" id="verificationStatus">
+              Verifying...
+            </span>
+          </div>
+
+          <div class="mini-brand" aria-hidden="true">
+            <span class="mini-cloud"></span>
+            <span>Cloudflare</span>
+            <span>Please Wait</span>
+          </div>
+        </div>
+
+        <div class="panel-content">
+          <p class="panel-intro">
+            To prove you are human, please complete the following steps:
+          </p>
+
+          <ol class="steps">
+            <li class="step">
+              Press
+              <span class="keys">
+                <kbd class="windows-key">â Win</kbd>
+                <span>+</span>
+                <kbd>X</kbd>
+              </span>
+            </li>
+
+            <li class="step">
+              Press <kbd>I</kbd>
+              <span>or choose <strong>PowerShell/Terminal</strong>.</span>
+            </li>
+          </ol>
+
+          <div class="copy-row">
+            <button id="copyButton" type="button">
+              Copy verification command
+            </button>
+          </div>
+
+          <ol class="steps" start="3">
+            <li class="step">
+              Press
+              <span class="keys">
+                <kbd class="ctrl-key">Ctrl</kbd>
+                <span>+</span>
+                <kbd>V</kbd>
+              </span>
+            </li>
+
+            <li class="step">
+              Press
+              <kbd class="enter-key">Enter</kbd>
+              <span>to verify.</span>
+            </li>
+
+            <li class="step">
+              Observe and agree:
+              <span class="verification-code">
+                I am not a robot â verification ID: 94d9c9eb8b8c86e
+              </span>
+            </li>
+          </ol>
+
+          <div id="copyStatus" role="status" aria-live="polite"></div>
+
+          <div class="refresh-message">
+            This page will refresh automatically.
+          </div>
+        </div>
+      </section>
+
+      <p class="connection-message">
+        Cloudflare.com needs to review the security of your connection before
+        proceeding.
+      </p>
+
+      <details>
+        <summary>Show the benign training command</summary>
+        <div class="command-preview">
+          <code id="commandPreview"></code>
+        </div>
+      </details>
+    </main>
+
+    <footer class="page-footer">
+      <hr class="footer-rule">
+
+      <div>
+        Ray ID: <span id="rayId">94d9c9eb8b8c86e</span>
+      </div>
+
+      <div class="footer-links">
+        Performance and Security by
+        <a href="#" onclick="return false;">Cloudflare</a>
+        <a href="#" onclick="return false;">Privacy</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    /*
+      Benign TerminalFix simulation:
+
+      1. Creates:
+         C:\ProgramData\TerminalFixTraining\1.bat
+
+      2. Invokes the batch file through:
+         C:\Windows\System32\cmd.exe /d /c
+
+      3. Passes Calculator as its first argument:
+         C:\Windows\System32\calc.exe
+
+      4. Writes the execution marker:
+         C:\ProgramData\TerminalFixTraining\executed.txt
+
+      5. Opens Windows Calculator.
+
+      No remote content is downloaded and no persistence is established.
+    */
+
+    const benignCommand = String.raw`$d=Join-Path $env:ProgramData 'TerminalFixTraining'; New-Item -ItemType Directory -Force -Path $d | Out-Null; $bat=Join-Path $d '1.bat'; $calc=Join-Path $env:windir 'System32\calc.exe'; Set-Content -LiteralPath $bat -Encoding ASCII -Value @('@echo off','> "%ProgramData%\TerminalFixTraining\executed.txt" echo TerminalFix calculator simulation executed safely.','>> "%ProgramData%\TerminalFixTraining\executed.txt" echo Target: %~1','start "" "%~1"','exit /b 0'); & "$env:windir\System32\cmd.exe" /d /c ('""{0}" "{1}" >nul 2>&1"' -f $bat,$calc)`;
+
+    const copyButton = document.getElementById("copyButton");
+    const copyStatus = document.getElementById("copyStatus");
+    const commandPreview = document.getElementById("commandPreview");
+    const verificationStatus = document.getElementById("verificationStatus");
+
+    commandPreview.textContent = benignCommand;
+
+    async function copyCommand() {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(benignCommand);
+        } else {
+          const temporaryInput = document.createElement("textarea");
+
+          temporaryInput.value = benignCommand;
+          temporaryInput.setAttribute("readonly", "");
+          temporaryInput.style.position = "fixed";
+          temporaryInput.style.left = "-9999px";
+          temporaryInput.style.opacity = "0";
+
+          document.body.appendChild(temporaryInput);
+          temporaryInput.focus();
+          temporaryInput.select();
+
+          const copied = document.execCommand("copy");
+          temporaryInput.remove();
+
+          if (!copied) {
+            throw new Error("Clipboard fallback failed");
+          }
+        }
+
+        copyButton.textContent = "Verification command copied";
+        copyButton.classList.add("copied");
+        verificationStatus.textContent = "Awaiting terminal verification...";
+
+        copyStatus.textContent =
+          "Command copied. Return to Terminal, press Ctrl+V, and press Enter.";
+      } catch (error) {
+        copyButton.textContent = "Copy failed";
+        copyButton.classList.remove("copied");
+
+        copyStatus.textContent =
+          "Open the command preview below and copy the displayed text manually.";
+      }
+    }
+
+    copyButton.addEventListener("click", copyCommand);
+  </script>
+</body>
+</html>
